@@ -13,11 +13,6 @@ import io
 from datetime import datetime
 from configparser import ConfigParser
 
-
-
-
-
-
 fileFormat = ["csv", "csvx", "json"]
 
 def main():
@@ -71,7 +66,7 @@ def main():
                formatted_date)    
         localDB.executestatement(sql, val)
         
-    # Close cursor and connection.
+    # Close db cursor and connection.
     localDB.close()
 
 if __name__ == '__main__':
