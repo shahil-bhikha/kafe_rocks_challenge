@@ -10,42 +10,69 @@ from db.connect import db
 from metroretro.metroretro import metroretro
 import pandas as pd
 import io
+from datetime import datetime
+from configparser import ConfigParser
 
-metroboard_username = "bhikha234@gmail.com"
-metroboard_password = "JDetDlv&3&Lawg!x85"
-boardName = "Kafe Rock Challenge"
+
+
+
+
+
 fileFormat = ["csv", "csvx", "json"]
-db_host = "localhost"
-db_user = "root"
-db_password = ""    
 
 def main():
-    # Connect to mysql DB
-    localDB = db(db_host, db_user, db_password)
+    # Read in config file.
+    config = ConfigParser()
+    config.read("config.ini")
+    
+    now = datetime.now()
+    formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+    
+    boardName = config.get("metroretro", "board_name")
+    
+    # Connect to mysql DB.
+    localDB = db(config.get("db", "db_host"), 
+                 config.get("db", "db_user"), 
+                 config.get("db", "db_password"))
     localDB.connect()
     
-    # Connect to metroretro client
-    client = metroretro(metroboard_username, metroboard_username)
+    # Connect to metroretro client.
+    client = metroretro(config.get("metroretro", "metroboard_username"), 
+                        config.get("metroretro", "metroboard_password"))
     client.connect()
         
-    boards = client.getBoards(boardName)    
-    if boards == "":
+    # Find the metro retro board id.
+    board = client.getBoards(boardName)
+    if board == "":
         return "Board not found"
-        
-    # Fetch columns
-    urlData = client.getBoardData(boards, fileFormat[1])  
     
-    # Be explicit about column names
+    # Fetch board data.
+    urlData = client.getBoardData(board, fileFormat[1])  
+    
+    # Be explicit about column names.
     columns = ["category", "author", "content", "votes", "date", "comments"]
     
+    # Convert raw data into a dataframe.
     rawData = pd.read_csv(io.StringIO(urlData), names=columns, header=0)
-        
-    cols = "`,`".join(i for i in columns)
-    sql = "INSERT INTO `` (`" +cols + "`) VALUES (%s, %s, %s, %s, %s, %s)"
     
+    # Convert NaN fields to None.
+    rawData = rawData.where(pd.notnull(rawData), None)
+    
+    # Update date column from string to timestamp.
+    rawData['date'] = pd.to_datetime(rawData['date'])
+        
+    
+    sql = ("INSERT INTO `metroboard` (`board_name`, `category`, "
+    "`author`, `content`, `votes`, `date`, `comments`, `created_at`, "
+    "`updated_at`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
     for i, row in rawData.iterrows():
-        update = sql.format(tuple(row))
-        localDB.executestatement(update)
+        val = (boardName, row['category'], row['author'], row['content'], 
+               row['votes'], row['date'].strftime("%Y-%m-%d %H:%M:%S"), row['comments'], formatted_date, 
+               formatted_date)    
+        localDB.executestatement(sql, val)
+        
+    # Close cursor and connection.
+    localDB.close()
 
 if __name__ == '__main__':
     main()
