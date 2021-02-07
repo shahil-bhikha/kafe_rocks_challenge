@@ -1,1 +1,0 @@
-#!/usr/bin/env bashecho "drop database if exists kafe_rocks" | mysql -urootecho "create database kafe_rocks" | mysql -urootcat schema.sql | mysql -uroot kafe_rocks

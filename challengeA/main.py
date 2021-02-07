@@ -6,6 +6,10 @@ Created on Thu Feb  4 15:42:53 2021
 @author: shahil
 """
 
+# Add decorator to api requests.
+# Add util file to clean data.
+# Add check for login details.
+
 from db.connect import db
 from metroretro.metroretro import metroretro
 import pandas as pd

@@ -8,8 +8,6 @@ Created on Thu Feb  4 23:26:57 2021
 
 import time
 import requests
-import json
-
 
 class metroretro:
 
@@ -52,6 +50,9 @@ class metroretro:
             # catastrophic error. bail.
             print(e)
             return
+        except Exception as e:
+             print(e)
+             return
 
         ID = ""
         for b in resp.json():

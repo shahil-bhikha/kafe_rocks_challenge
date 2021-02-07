@@ -1,0 +1,2 @@
+*/5 * * * * root cd /kafe-rocks-challenge/ && /usr/local/bin/python /kafe-rocks-challenge/main.py >> /proc/1/fd/1 2>>/proc/1/fd/2
+
