@@ -45,4 +45,13 @@ Execute:
 ```
 python main.py -id=14
 ```
+`id` is the domain ID to filter the report on. If none is provided or the ID cannot be found the full report will be generated.
 
+These reports are generated using `matplotlib` but ideally the data should be stored in a db for consumption by some reporting tool.
+
+## Improvements
+
+- Logging
+- Better error handling
+- Better API methods and try exceptions
+- Create microservice instead of using cron functionality inside Docker
