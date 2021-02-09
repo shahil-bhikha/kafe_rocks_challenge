@@ -125,12 +125,13 @@ def reportFilter(df, ID: int):
         New dataframe with the filtered data.
 
     """
+    
+    # Check if domain id exists in the dataset.
     if ID in df["domainid"].unique():
-        return df[df["domainid"] == int(ID)]
+        return df[df["domainid"] == ID]
     else:
         print("Not a valid domain id, no filter was applied")
         return df
-        
 
 def getReports(df, domainID:int):
     """
@@ -151,6 +152,7 @@ def getReports(df, domainID:int):
     df1 = df.groupby("date")\
         .count()[["total_first_deposit_count", "customers_retained_count"]]
     
+    # Generate and save bar chart.
     fig, ax = plt.subplots()
     df1.plot.bar(rot=0, ax=ax)
     ax.legend(["first_deposit_count", "customers_retained_count"]);
@@ -159,6 +161,7 @@ def getReports(df, domainID:int):
     df2 = df.groupby("date")\
         .sum()[["total_net_revenue", "customers_retained_revenue_sum"]]
     
+    # Generate and save bar chart.
     fig, ax = plt.subplots()
     df2.plot.bar(rot=0, ax=ax)
     ax.legend(["customer_first_deposit_net_revenue", "customers_retained_revenue_sum"]);

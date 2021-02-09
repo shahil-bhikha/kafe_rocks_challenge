@@ -7,9 +7,7 @@ Created on Sun Feb  7 19:48:54 2021
 """
 
 import argparse
-
 import pandas as pd
-
 import util
 
 directory = "Data_Engineer_Challenge_-_Data"
@@ -36,7 +34,7 @@ def main():
     df = util.cleanDf(metaD, customerD, customerR)
 
     # Apply any filter provided to dataset.
-    df1 = util.reportFilter(df, domainID)
+    df1 = util.reportFilter(df, int(domainID))
     
     # Generate and save reports.
     util.getReports(df1, domainID)
