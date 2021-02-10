@@ -35,6 +35,16 @@ docker run --rm --name=kafechallenge --link kaferocksmysql:mysql kafechallenge:l
 ```
 When the container is run, StdOut is tailing the cron.log file.
 
+To stop the containers, open a new terminal and execute:
+To get the container names.
+```
+docker ps 
+```
+To stop the containers.
+```
+docker stop {container name}
+```
+
 ## Challenge B : Automated Data Flow
 
 In order for the reports to be generated, all files must be added to the following directory `Data_Engineer_Challenge_-_Data`. The directory can be updated in the `main.py` if the files are located elsewhere. Some helper functions have been added to the `util.py` file. These untility functions read in the files from the directory, sorts them according to type and converts them to dataframes. Data is cleaned, transformed, filtered and finally the reports are generated and saved.
@@ -55,3 +65,4 @@ These reports are generated using `matplotlib` but ideally the data should be st
 - Better error handling
 - Better API methods and try exceptions
 - Create microservice instead of using cron functionality inside Docker
+- Dependent on volumn of data, implement streaming API method
