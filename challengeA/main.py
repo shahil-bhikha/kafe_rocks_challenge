@@ -6,35 +6,32 @@ Created on Thu Feb  4 15:42:53 2021
 @author: shahil
 """
 
-# Add decorator to api requests.
-# Add util file to clean data.
-# Add check for login details.
-
-from db.connect import db
-from metroretro.metroretro import metroretro
-import pandas as pd
-import io
 from datetime import datetime
 from configparser import ConfigParser
+from db.connect import db
+from metroretro.metroretro import metroretro
+import util
 
 fileFormat = ["csv", "csvx", "json"]
 
 def main():
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    print(f"{now}: Executing metro retro pipeline now")
     # Read in config file.
     config = ConfigParser()
     config.read("config.ini")
     
-    now = datetime.now()
-    formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
-    
     boardName = config.get("metroretro", "board_name")
     
+    print("Connecting to DB")
     # Connect to mysql DB.
     localDB = db(config.get("db", "db_host"), 
                  config.get("db", "db_user"), 
                  config.get("db", "db_password"))
     localDB.connect()
     
+    print("Connecting to metroretro client")
     # Connect to metroretro client.
     client = metroretro(config.get("metroretro", "metroboard_username"), 
                         config.get("metroretro", "metroboard_password"))
@@ -45,33 +42,21 @@ def main():
     if board == "":
         return "Board not found"
     
+    print("Fetching board data")
     # Fetch board data.
     urlData = client.getBoardData(board, fileFormat[1])  
     
-    # Be explicit about column names.
-    columns = ["category", "author", "content", "votes", "date", "comments"]
+    # Convert data to dataframe and clean.
+    rawData = util.writeToDf(urlData)
     
-    # Convert raw data into a dataframe.
-    rawData = pd.read_csv(io.StringIO(urlData), names=columns, header=0)
-    
-    # Convert NaN fields to None.
-    rawData = rawData.where(pd.notnull(rawData), None)
-    
-    # Update date column from string to timestamp.
-    rawData['date'] = pd.to_datetime(rawData['date'])
-        
-    
-    sql = ("INSERT INTO `metroboard` (`board_name`, `category`, "
-    "`author`, `content`, `votes`, `date`, `comments`, `created_at`, "
-    "`updated_at`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
-    for i, row in rawData.iterrows():
-        val = (boardName, row['category'], row['author'], row['content'], 
-               row['votes'], row['date'].strftime("%Y-%m-%d %H:%M:%S"), row['comments'], formatted_date, 
-               formatted_date)    
-        localDB.executestatement(sql, val)
+    print("Writing data to the database")
+    # Write dataframe to database.
+    util.toDB(localDB, boardName, rawData)
         
     # Close db cursor and connection.
     localDB.close()
+    
+    print(f"{now}: Completed running metro retro pipeline")
 
 if __name__ == '__main__':
     main()
